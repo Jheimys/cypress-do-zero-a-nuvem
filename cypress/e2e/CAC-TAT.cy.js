@@ -43,7 +43,7 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     cy.get('#firstName').type('João')
     cy.get('#lastName').type('Silva')
     cy.get('#email').type('ePpM@example.com')
-    cy.get('#phone-checkbox').click()  
+    cy.get('#phone-checkbox').check()  
     cy.get('#open-text-area').type('mensagem de teste')
     cy.get('button[type="submit"]').click()
 
@@ -65,8 +65,91 @@ describe('Central de Atendimento ao Cliente TAT', () => {
   
   })  
 
-  it.only('envia o formuário com sucesso usando um comando customizado', () => {
+  it('envia o formuário com sucesso usando um comando customizado', () => {
     cy.fillMandatoryFieldsAndSubmit('João', 'Silva', 'ePpM@example.com', 'mensagem de teste')    
+  })
+
+  it('seleciona um produto (YouTube) por seu texto', () => {
+    cy.get('#product').select('YouTube').should('have.value', 'youtube')
+  })
+
+  it('seleciona um produto (Mentoria) por seu valor (value)', () => {
+    cy.get('#product').select('mentoria').should('have.value', 'mentoria')
+  })
+
+   it('seleciona um produto (Blog) por seu índice', () => {
+    cy.get('#product').select(1).should('have.value', 'blog')
+  })
+
+  it('marca o tipo de atendimento "Feedback"', () => {
+    cy.get('input[type="radio"][value="feedback"]').check().should('have.value', 'feedback')
+  })
+
+  it('marca cada tipo de atendimento', () => {
+    cy.get('input[type="radio"]').each(($el) => {
+      cy.wrap($el).check().should('be.checked')
+    })
+  })
+
+  it('marca ambos checkboxes, depois desmarca o último', () => {
+    cy.get('#email-checkbox').check().should('be.checked')
+    cy.get('#phone-checkbox').check().should('be.checked')
+    cy.get('#phone-checkbox').uncheck().should('not.be.checked')
+  })
+
+   it('marca ambos checkboxes, depois desmarca o último', () => {
+    cy.get('input[type="checkbox"]')
+      .check()
+      .should('be.checked')
+      .last()
+      .uncheck()
+      .should('not.be.checked')
+  })
+
+  it('seleciona um arquivo da pasta fixtures', () => {
+    cy.get('#file-upload')
+      .selectFile('cypress/fixtures/example.json')
+      .should((input) => {
+        expect(input[0].files[0].name).to.equal('example.json')
+      })
+      
+  })
+
+  
+  it('seleciona um arquivo simulando um drag-and-drop', () => {
+    cy.get('#file-upload')
+      .selectFile('cypress/fixtures/example.json', { action: 'drag-drop' })
+      .should((input) => {
+        expect(input[0].files[0].name).to.equal('example.json')
+      })   
+  })
+
+  it('seleciona um arquivo utilizando uma fixture para a qual foi dada um alias', () => {
+    cy.fixture('example.json').as('sampleFile')
+    cy.get('#file-upload')
+      .selectFile('@sampleFile')
+      .should((input) => {
+        expect(input[0].files[0].name).to.equal('example.json')
+      })   
+  })
+  
+  it('verifica que a política de privacidade abre em outra aba sem a necessidade de um clique', () => {
+    cy.get('#privacy a')
+    .should('have.attr', 'href', 'privacy.html')
+    .and('have.attr', 'target', '_blank')
+  })
+
+  it('acessa a página da política de privacidade removendo o target e então clicando no link', () => {
+    cy.get('#privacy a')
+      .invoke('removeAttr', 'target')
+      .click()
+    
+    cy.contains('h1','CAC TAT - Política de Privacidade').should('be.visible')
+  })
+
+  it('testa a página da política de privacidade de forma independente', () => {
+    cy.visit('./src/privacy.html')
+    cy.contains('CAC TAT - Política de Privacidade').should('be.visible')
   })
   
 })
