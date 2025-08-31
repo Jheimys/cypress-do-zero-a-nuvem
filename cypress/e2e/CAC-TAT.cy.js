@@ -152,4 +152,83 @@ describe('Central de Atendimento ao Cliente TAT', () => {
     cy.contains('CAC TAT - Política de Privacidade').should('be.visible')
   })
   
+  
+  it('exibe mensagem de erro ao submeter o formulário sem preencher os campos obrigatórios explorando os comandos clock e tick', () => {
+    cy.clock()
+
+    cy.get('button[type="submit"]').click()
+
+    cy.get('.error strong')
+      .should('be.visible')
+      .and('contain', 'Valide os campos obrigatórios!')
+
+    cy.tick(3000)
+
+    cy.get('.error strong')
+      .should('not.be.visible')
+  
+  })  
+
+
+  it('envia o formuário com sucesso usando um comando customizado  explorando os comandos clock e tick', () => {
+    cy.clock()
+
+    cy.fillMandatoryFieldsAndSubmit('João', 'Silva', 'ePpM@example.com', 'mensagem de teste')    
+
+    cy.tick(3000)
+
+    cy.get('.success strong')
+      .should('not.be.visible')
+      
+  })
+
+  Cypress._.times(3, () => {
+    it('envia o formuário com sucesso usando um comando customizado', () => {
+    cy.fillMandatoryFieldsAndSubmit('João', 'Silva', 'ePpM@example.com', 'mensagem de teste')    
+    })
+  })
+
+  it('exibe e oculta as mensagens de sucesso e erro usando .invoke()', () => {
+  cy.get('.success')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Mensagem enviada com sucesso.')
+    .invoke('hide')
+    .should('not.be.visible')
+  cy.get('.error')
+    .should('not.be.visible')
+    .invoke('show')
+    .should('be.visible')
+    .and('contain', 'Valide os campos obrigatórios!')
+    .invoke('hide')
+    .should('not.be.visible')
+})
+
+  it('preenche o campo da área de texto usando o comando invoke.', () => {
+    
+    const longText = Cypress._.repeat('0123456789', 20)
+
+    cy.get('#open-text-area')
+      .invoke('val', longText)
+      .should('have.value', longText)
+    })
+
+  it.only('faz uma requisição HTTP', () => {
+    cy.request('https://cac-tat.s3.eu-central-1.amazonaws.com/index.html')
+     .as('getRequest')
+     .its('status')
+     .should('be.equal', 200)
+
+    cy.get('@getRequest')
+     .its('statusText')
+     .should('be.equal', 'OK')
+
+    cy.get('@getRequest')
+     .its('body')
+     .should('include', 'CAC TAT')
+
+  })
+
+
 })
